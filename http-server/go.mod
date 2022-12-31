@@ -1,3 +1,3 @@
-module github.com/hahnap4/http_server_golang
+module github.com/hahnap4/social-media/http-server
 
 go 1.19
