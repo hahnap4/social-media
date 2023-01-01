@@ -44,7 +44,7 @@ func (c Client) GetPosts(userEmail string) ([]Post, error) {
 
 	postsArray := []Post{}
 
-	for key, _ := range db.Posts {
+	for key := range db.Posts {
 		if db.Posts[key].UserEmail == userEmail {
 			postsArray = append(postsArray, db.Posts[key])
 			fmt.Println("relevant post added to search list - success!")
