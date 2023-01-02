@@ -9,6 +9,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// Post
+type Post struct {
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	UserEmail string    `json:"userEmail"`
+	Text      string    `json:"text"`
+}
+
 func (c Client) CreatePost(userEmail, text string) (Post, error) {
 	latestData, _ := os.ReadFile(c.filePathToDB)
 	db := databaseSchema{}

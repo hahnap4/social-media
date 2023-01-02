@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+// User
+type User struct {
+	CreatedAt time.Time `json:"createdAt"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	Name      string    `json:"name"`
+	Age       int       `json:"age"`
+}
+
 func (c Client) CreateUser(email, password, name string, age int) (User, error) {
 	latestData, _ := os.ReadFile(c.filePathToDB)
 	db := databaseSchema{}
@@ -23,16 +32,15 @@ func (c Client) CreateUser(email, password, name string, age int) (User, error) 
 
 		db.Users[email] = newUser
 
-		c.updateDB(db)
+		err := c.updateDB(db)
 
 		fmt.Println("new user added to db - success!")
 
-		return db.Users[email], nil
+		return newUser, err
 
-	} else {
-		fmt.Println(db.Users)
-		return db.Users[email], fmt.Errorf("createUser: User already exists")
 	}
+	fmt.Println(db.Users)
+	return User{}, fmt.Errorf("createUser: User already exists")
 }
 
 func (c Client) UpdateUser(email, password, name string, age int) (User, error) {

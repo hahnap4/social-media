@@ -1,2 +1,5 @@
-./http-server/sandbox/*
+http_server_golang
+sandbox
+db.json
+*.rest
 go.work

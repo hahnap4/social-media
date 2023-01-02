@@ -3,7 +3,6 @@ package database
 import (
 	"encoding/json"
 	"os"
-	"time"
 )
 
 type Client struct {
@@ -16,23 +15,6 @@ func NewClient(filePath string) Client {
 	}
 
 	return c
-}
-
-// Post
-type Post struct {
-	ID        string    `json:"id"`
-	CreatedAt time.Time `json:"createdAt"`
-	UserEmail string    `json:"userEmail"`
-	Text      string    `json:"text"`
-}
-
-// User
-type User struct {
-	CreatedAt time.Time `json:"createdAt"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	Name      string    `json:"name"`
-	Age       int       `json:"age"`
 }
 
 type databaseSchema struct {

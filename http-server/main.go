@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,12 +10,29 @@ import (
 	"github.com/hahnap4/social-media/http-server/internal/database"
 )
 
-func main() {
+type apiConfig struct {
+	dbClient database.Client
+}
 
+type errorBody struct {
+	Error string `json:"error"`
+}
+
+func main() {
 	m := http.NewServeMux()
 
-	m.HandleFunc("/", testHandler)
-	m.HandleFunc("/err", testErrHandler)
+	c := database.NewClient("db.json")
+	dbErr := c.EnsureDB()
+	if dbErr != nil {
+		log.Fatal(dbErr)
+	}
+
+	apiCfg := apiConfig{
+		dbClient: c,
+	}
+
+	m.HandleFunc("/users", apiCfg.endpointUsersHandler)
+	m.HandleFunc("/users/", apiCfg.endpointUsersHandler)
 
 	addr := "localhost:8080"
 	srv := http.Server{
@@ -30,6 +46,21 @@ func main() {
 	fmt.Println("server started on ", addr)
 	err := srv.ListenAndServe()
 	log.Fatal(err)
+}
+
+func respondWithError(w http.ResponseWriter, code int, err error) {
+	if err == nil {
+		log.Println("don't call respondWithError with nil error")
+		return
+	}
+
+	log.Println(err)
+
+	errorMessage := errorBody{
+		Error: err.Error(),
+	}
+
+	respondWithJSON(w, code, errorMessage)
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -52,34 +83,4 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 		w.WriteHeader(code)
 		w.Write(response)
 	}
-}
-
-type errorBody struct {
-	Error string `json:"error"`
-}
-
-func respondWithError(w http.ResponseWriter, code int, err error) {
-	if err == nil {
-		log.Println("don't call respondWithError with nil error")
-		return
-	}
-
-	log.Println(err)
-
-	errorMessage := errorBody{
-		Error: err.Error(),
-	}
-
-	respondWithJSON(w, code, errorMessage)
-}
-
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	respondWithJSON(w, 200, database.User{
-		Email: "test@example.com",
-	})
-}
-
-func testErrHandler(w http.ResponseWriter, r *http.Request) {
-	respondWithError(w, 500, errors.New("server error"))
-
 }
