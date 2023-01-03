@@ -5,31 +5,32 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
-func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
-
+func (apiCfg apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email    string `json:"email"`
 		Password string `json:"password"`
 		Name     string `json:"name"`
 		Age      int    `json:"age"`
 	}
 
-	/* FIXME: Decoder keeps giving me EOF errors or "request body must not be empty" error.
-	1. The post request only worked once.
-	2. Request body must not be empty error.
-	3. CreateUser: User already exists error.
-	4. db.json only contains the zero-value equivalents for the record.
-	*/
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
+	email := strings.TrimPrefix(r.URL.Path, "/users/")
+	if email == "" {
+		respondWithError(w, http.StatusBadRequest, errors.New("handlerUpdateUser: no email provided"))
+		return
+	}
+
+	data, err := ioutil.ReadAll(r.Body)
 
 	params := parameters{}
 
-	err := decoder.Decode(&params)
+	json.Unmarshal(data, &params)
+
+	fmt.Println(params)
 
 	if err != nil {
 		switch {
@@ -42,8 +43,8 @@ func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	newUser, err := apiCfg.dbClient.CreateUser(
-		params.Email,
+	updatedUser, err := apiCfg.dbClient.UpdateUser(
+		email,
 		params.Password,
 		params.Name,
 		params.Age,
@@ -53,5 +54,5 @@ func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, newUser)
+	respondWithJSON(w, http.StatusOK, updatedUser)
 }
