@@ -1,5 +1,5 @@
 http_server_golang
-sandbox
+http-server/sandbox/*
 db.json
 *.rest
 go.work
