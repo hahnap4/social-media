@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -20,17 +19,16 @@ func (apiCfg apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request
 
 	email := strings.TrimPrefix(r.URL.Path, "/users/")
 	if email == "" {
-		respondWithError(w, http.StatusBadRequest, errors.New("handlerUpdateUser: no email provided"))
+		respondWithError(w, http.StatusBadRequest, errors.New("handlerUpdateUser:no email provided"))
 		return
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
 
 	params := parameters{}
 
-	json.Unmarshal(data, &params)
-
-	fmt.Println(params)
+	err := decoder.Decode(&params)
 
 	if err != nil {
 		switch {
@@ -51,7 +49,6 @@ func (apiCfg apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request
 	)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err)
-		return
 	}
 
 	respondWithJSON(w, http.StatusOK, updatedUser)
