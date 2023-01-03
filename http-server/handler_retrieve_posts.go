@@ -9,13 +9,9 @@ import (
 	"net/http"
 )
 
-func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
-
+func (apiCfg apiConfig) handlerRetrievePosts(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Name     string `json:"name"`
-		Age      int    `json:"age"`
+		UserEmail string `json:"userEmail"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -36,16 +32,10 @@ func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	newUser, err := apiCfg.dbClient.CreateUser(
-		params.Email,
-		params.Password,
-		params.Name,
-		params.Age,
-	)
+	postsList, err := apiCfg.dbClient.GetPosts(params.UserEmail)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err)
-		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, newUser)
+	respondWithJSON(w, http.StatusOK, postsList)
 }
